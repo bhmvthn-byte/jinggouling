@@ -1,0 +1,25 @@
+{
+  "name": "净垢灵监控",
+  "short_name": "净垢灵",
+  "description": "净垢灵网站 24 小时服务状态监控台",
+  "start_url": "/mobile-monitor.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060912",
+  "theme_color": "#060912",
+  "icons": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
