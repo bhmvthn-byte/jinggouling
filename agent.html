@@ -67,7 +67,7 @@
     .auth__hint { margin-top: 20px; font-size: 12px; color: var(--c-text-sub); text-align: center; line-height: 1.7; }
 
     /* ============ 工作台视图 ============ */
-    .work { min-height: 100vh; display: none; flex-direction: column; }
+    .work { height: 100vh; height: 100dvh; display: none; flex-direction: column; }
     .work.on { display: flex; }
     .work__bar {
       height: 64px; background: var(--c-surface); border-bottom: 1px solid var(--c-border);
@@ -95,8 +95,8 @@
     .work__logout:hover { color: var(--c-text); border-color: var(--c-border-strong); }
 
     .work__layout {
-      flex: 1; display: grid; grid-template-columns: 304px 1fr;
-      gap: 1px; background: var(--c-border); height: calc(100vh - 64px);
+      flex: 1; min-height: 0; display: grid; grid-template-columns: 304px 1fr;
+      gap: 1px; background: var(--c-border);
     }
     .sessions { background: var(--c-surface-2); overflow-y: auto; padding: 10px; }
     .sessions__head {
@@ -169,9 +169,14 @@
     /* ============ 聊天区 ============ */
     .chat { background: var(--c-surface); display: flex; flex-direction: column; min-width: 0; }
     .chat__head {
-      padding: 16px 22px; border-bottom: 1px solid var(--c-border); font-weight: 600; font-size: 15px; color: var(--c-text);
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; border-bottom: 1px solid var(--c-border); font-weight: 600; font-size: 15px; color: var(--c-text);
+      display: flex; align-items: center; gap: 10px;
     }
+    .chat__back {
+      display: none; align-items: center; flex: none; font-size: 13px; color: var(--c-primary);
+      background: none; border: none; cursor: pointer; padding: 4px 2px; letter-spacing: .5px;
+    }
+    #chatTitle { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     /* ============ 多标签页 ============ */
     .tabs {
       display: flex; gap: 4px; padding: 6px 8px 0; background: var(--c-surface);
@@ -267,9 +272,44 @@
     .chat__input button:disabled { opacity: .45; cursor: not-allowed; }
 
     @media (max-width: 720px) {
-      .work__layout { grid-template-columns: 1fr; grid-template-rows: 260px 1fr; height: auto; }
-      .sessions { max-height: 260px; }
+      /* 登录视图 */
+      .auth { padding: 16px; }
+      .auth__card { padding: 28px 20px; border-radius: 16px; }
+      .field input { font-size: 16px; }
+
+      /* 顶栏 */
+      .work__bar { height: 56px; padding: 0 14px; }
+      .work__brand { gap: 8px; }
+      .work__brand .dot { width: 30px; height: 30px; font-size: 14px; }
+      .work__title { font-size: 14px; }
       .work__status { display: none; }
+      .work__logout { font-size: 12px; padding: 6px 12px; }
+
+      /* 监控面板：横向滑动 */
+      .monitor__item { min-width: 92px; padding: 8px 10px; }
+      .monitor__label { font-size: 10px; }
+      .monitor__value { font-size: 12px; }
+
+      /* 列表 ↔ 聊天 单页切换 */
+      .work__layout { display: block; position: relative; }
+      .sessions { position: absolute; inset: 0; height: 100%; max-height: none; padding: 8px; }
+      .chat { position: absolute; inset: 0; display: none; }
+      body.chat-open .sessions { display: none; }
+      body.chat-open .chat { display: flex; }
+      .chat__back { display: inline-flex; }
+
+      /* 聊天区细节 */
+      .chat__head { padding: 12px 14px; font-size: 14px; }
+      .chat__body { padding: 14px 12px; gap: 8px; }
+      .bubble { max-width: 82%; font-size: 13px; padding: 7px 10px; }
+      .chat__quick { padding: 10px 10px 0; gap: 6px; }
+      .chat__quick button { font-size: 11px; padding: 5px 10px; }
+      .chat__input { gap: 8px; padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); }
+      .chat__input input { padding: 10px 12px; font-size: 16px; }
+      .chat__input button { padding: 0 16px; height: 42px; font-size: 13px; }
+      .tabs { padding: 4px 6px 0; }
+      .tab { padding: 6px 8px 6px 10px; font-size: 12px; max-width: 160px; }
+      .tab__name { max-width: 110px; }
     }
   </style>
 </head>
@@ -323,6 +363,7 @@
       </aside>
       <section class="chat">
         <div class="chat__head">
+          <button class="chat__back" id="chatBackBtn" type="button">← 返回</button>
           <span id="chatTitle">请选择左侧会话</span>
           <span class="chat__presence"><i></i>实时同步</span>
         </div>
@@ -424,6 +465,7 @@
         sessionStorage.removeItem(AUTH_KEY);
         document.getElementById('workView').classList.remove('on');
         document.getElementById('loginView').style.display = 'grid';
+        document.body.classList.remove('chat-open');
       }
 
       function doLogin() {
@@ -480,6 +522,7 @@
             currentSessionId = null;
             document.getElementById('chatTitle').textContent = '请选择左侧会话';
             document.getElementById('chatBody').innerHTML = '<div class="empty">暂无消息</div>';
+            document.body.classList.remove('chat-open');
           }
         }
         renderTabs();
@@ -508,6 +551,7 @@
       /* ---- 聊天区 ---- */
       function renderChat(id) {
         currentSessionId = id;
+        document.body.classList.add('chat-open');
         openTab(id);
         var s = readSessions()[id];
         var chatEl = document.getElementById('chatBody');
@@ -566,6 +610,9 @@
         if (e.key === 'Enter') doLogin();
       });
       document.getElementById('logoutBtn').addEventListener('click', showLogin);
+      document.getElementById('chatBackBtn').addEventListener('click', function () {
+        document.body.classList.remove('chat-open');
+      });
       document.getElementById('clearSessionsBtn').addEventListener('click', clearAllSessions);
       document.getElementById('sendReplyBtn').addEventListener('click', sendReply);
       document.getElementById('replyInput').addEventListener('keydown', function (e) {
