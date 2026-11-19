@@ -26,9 +26,15 @@
     return window.__jcClient;
   }
 
+  // ---- 北京时间（中国标准时间 UTC+8，与访客设备时区无关）----
+  function beijingNow() {
+    var now = new Date();
+    return new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 8 * 3600000);
+  }
+
   // ---- 维护模式 ----
   function isMaintenance(now) {
-    now = now || new Date();
+    now = now || beijingNow();
     var h = now.getHours();
     var d = now.getDate();
     if (h >= 0 && h < 8) return true;                 // 每日例行维护
@@ -37,7 +43,7 @@
   }
 
   function maintenanceType(now) {
-    now = now || new Date();
+    now = now || beijingNow();
     var h = now.getHours();
     var d = now.getDate();
     if (h >= 0 && h < 8) return 'daily';
@@ -83,7 +89,7 @@
       var leaveCount = values.filter(function (s) {
         return s && typeof s === 'object' && s.type === 'leave-message';
       }).length;
-      var now = new Date();
+      var now = beijingNow();
       var maint = isMaintenance(now);
       return {
         maintenance: maint,
@@ -105,6 +111,7 @@
     setSessions: setSessions,
     clearSessions: clearSessions,
     getStatus: getStatus,
-    isMaintenance: isMaintenance
+    isMaintenance: isMaintenance,
+    nowBeijing: function () { return formatTime(beijingNow()); }
   };
 })();
