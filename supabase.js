@@ -56,6 +56,10 @@
     return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
       ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
   }
+  function formatTimeShort(d) {
+    return pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
 
   // ---- 会话数据读写（单行 JSON 快照，与原后端 SESSIONS 语义一致）----
   function getSessions() {
@@ -94,7 +98,7 @@
       return {
         maintenance: maint,
         maintenanceType: maintenanceType(now),
-        maintenanceWindow: '00:00–08:00 / 每月1号 11:00–12:00',
+        maintenanceWindow: '00:00–08:00',
         serviceHours: '9:00–21:00',
         uptime: '云端在线',
         sessionCount: values.length,
@@ -112,6 +116,7 @@
     clearSessions: clearSessions,
     getStatus: getStatus,
     isMaintenance: isMaintenance,
-    nowBeijing: function () { return formatTime(beijingNow()); }
+    nowBeijing: function () { return formatTime(beijingNow()); },
+    nowBeijingShort: function () { return formatTimeShort(beijingNow()); }
   };
 })();
