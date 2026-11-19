@@ -431,10 +431,18 @@
 
       /* ---- 实时监控面板 ---- */
       var monitorTimer = null;
+      var clockTimer = null;
+      function tickClock() {
+        var el = document.getElementById('mTime');
+        if (el && window.JC && window.JC.nowBeijing) el.textContent = window.JC.nowBeijing();
+      }
       function startMonitor() {
         if (monitorTimer) clearInterval(monitorTimer);
+        if (clockTimer) clearInterval(clockTimer);
         updateMonitor();
         monitorTimer = setInterval(updateMonitor, 5000);
+        tickClock();
+        clockTimer = setInterval(tickClock, 1000);
       }
       function updateMonitor() {
         window.JC.getStatus().then(function (s) {
