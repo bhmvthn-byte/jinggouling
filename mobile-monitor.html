@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#060912" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="净垢灵监控" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" href="/icons/icon-180.png" />
+<title>净垢灵 · 移动监控</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #060912;
+    --bg-2: #0d1320;
+    --surface: rgba(19,26,38,.88);
+    --surface-hi: rgba(26,35,52,.92);
+    --border: rgba(40,55,73,.6);
+    --border-hi: rgba(60,80,100,.5);
+    --text: #e6edf3;
+    --text-dim: #8b97a8;
+    --sub: #5d6b7d;
+    --green: #3fb950;
+    --green-soft: rgba(63,185,80,.12);
+    --green-glow: rgba(63,185,80,.25);
+    --red: #f85149;
+    --red-soft: rgba(248,81,73,.12);
+    --red-glow: rgba(248,81,73,.25);
+    --orange: #f0883e;
+    --orange-soft: rgba(240,136,62,.12);
+    --blue: #58a6ff;
+    --cyan: #39d0d8;
+    --purple: #a371f7;
+  }
+
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Segoe UI', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 18px);
+    background: var(--bg);
+    background-image:
+      radial-gradient(480px 300px at 15% -5%, rgba(63,185,80,.08), transparent 60%),
+      radial-gradient(420px 260px at 88% 105%, rgba(88,166,255,.06), transparent 55%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== 顶部栏 ===== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; gap: 10px;
+  }
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .brand__logo {
+    width: 38px; height: 38px; border-radius: 10px; flex: none;
+    display: grid; place-items: center; font-size: 20px;
+    background: linear-gradient(135deg, var(--green), var(--cyan));
+    box-shadow: 0 3px 12px rgba(63,185,80,.3);
+  }
+  .brand__name { font-size: 16px; font-weight: 800; letter-spacing: .3px; }
+  .brand__name span { color: var(--blue); }
+  .brand__tag {
+    font-size: 9px; color: var(--sub); letter-spacing: 1.2px;
+    text-transform: uppercase; margin-top: 1px;
+  }
+  .topbar__meta { text-align: right; flex: none; }
+  .topbar__time {
+    font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums;
+    font-weight: 600; letter-spacing: .3px;
+  }
+  .topbar__refresh {
+    font-size: 10px; color: var(--sub); margin-top: 2px;
+    display: flex; align-items: center; gap: 5px; justify-content: flex-end;
+  }
+  .btn-refresh {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border-hi);
+    background: var(--surface-hi); color: var(--cyan); display: grid; place-items: center;
+    cursor: pointer; flex: none; transition: background .18s, transform .18s;
+  }
+  .btn-refresh:active { transform: rotate(360deg); transition: transform .5s; }
+  .btn-refresh svg { width: 18px; height: 18px; }
+  .dot-live {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 5px var(--green-glow); animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+  /* ===== 错误横幅 ===== */
+  .err-banner {
+    display: none; background: linear-gradient(90deg, var(--red-soft), transparent);
+    border: 1px solid var(--red); border-left-width: 3px; border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 12px;
+    color: var(--red); font-size: 12px; font-weight: 600;
+    align-items: center; gap: 7px;
+  }
+  .err-banner.show { display: flex; animation: shake .4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-3px);} 75%{transform:translateX(3px);} }
+
+  /* ===== 主状态卡 ===== */
+  .hero {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 16px; margin-bottom: 10px;
+    position: relative; overflow: hidden; backdrop-filter: blur(8px);
+    display: flex; align-items: center; gap: 14px;
+    transition: border-color .4s;
+  }
+  .hero::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(360px 180px at 0% 50%, var(--green-soft), transparent 70%);
+    transition: background .4s;
+  }
+  .hero.offline::after { background: radial-gradient(360px 180px at 0% 50%, var(--red-soft), transparent 70%); }
+  .hero.maintenance::after { background: radial-gradient(360px 180px at 0% 50%, var(--orange-soft), transparent 70%); }
+  .hero.online { border-color: rgba(63,185,80,.35); }
+  .hero.offline { border-color: rgba(248,81,73,.4); }
+  .hero.maintenance { border-color: rgba(240,136,62,.35); }
+
+  .hero__light {
+    width: 52px; height: 52px; border-radius: 50%; flex: none;
+    display: grid; place-items: center; font-size: 26px;
+    background: var(--green-soft); border: 2px solid var(--green);
+    position: relative; z-index: 1;
+    animation: pulse-ring 2.4s infinite; transition: all .4s;
+  }
+  .hero.offline .hero__light {
+    background: var(--red-soft); border-color: var(--red);
+    animation: pulse-ring-fast 1.2s infinite;
+  }
+  .hero.maintenance .hero__light {
+    background: var(--orange-soft); border-color: var(--orange);
+    animation: none;
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 var(--green-glow); }
+    70% { box-shadow: 0 0 0 12px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  @keyframes pulse-ring-fast {
+    0% { box-shadow: 0 0 0 0 var(--red-glow); }
+    70% { box-shadow: 0 0 0 10px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .hero__info { flex: 1; position: relative; z-index: 1; min-width: 0; }
+  .hero__label {
+    font-size: 9px; color: var(--sub); letter-spacing: 1.5px;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .hero__value {
+    font-size: 24px; font-weight: 800; margin-top: 2px; letter-spacing: .3px;
+    transition: color .3s;
+  }
+  .hero.online .hero__value { color: var(--green); }
+  .hero.offline .hero__value { color: var(--red); }
+  .hero.maintenance .hero__value { color: var(--orange); }
+  .hero__detail {
+    font-size: 11px; color: var(--text-dim); margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ===== 刷新进度条 ===== */
+  .progress {
+    height: 2px; background: var(--bg-2); border-radius: 1px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .progress__bar {
+    height: 100%; width: 0; border-radius: 1px;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    box-shadow: 0 0 6px var(--green-glow);
+  }
+
+  /* ===== 数据网格 2列 ===== */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 11px; padding: 13px 12px;
+    position: relative; overflow: hidden; backdrop-filter: blur(6px);
+  }
+  .stat::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent, var(--blue)); opacity: .7;
+  }
+  .stat--sessions { --accent: var(--cyan); }
+  .stat--messages { --accent: var(--orange); }
+  .stat--connections { --accent: var(--green); }
+  .stat--rate { --accent: var(--purple); }
+  .stat__top { display: flex; align-items: center; justify-content: space-between; }
+  .stat__icon { font-size: 18px; opacity: .9; }
+  .stat__label { font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: .8px; }
+  .stat__value {
+    font-size: 22px; font-weight: 800; margin-top: 4px;
+    font-variant-numeric: tabular-nums; letter-spacing: .2px;
+  }
+  .stat__sub { font-size: 10px; color: var(--sub); margin-top: 1px; }
+
+  /* ===== 运行时长独立卡 ===== */
+  .uptime-bar {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 11px; padding: 12px 14px; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; overflow: hidden; backdrop-filter: blur(6px);
+  }
+  .uptime-bar::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--blue); opacity: .7;
+  }
+  .uptime-bar__label { font-size: 10px; color: var(--sub); letter-spacing: 1px; text-transform: uppercase; }
+  .uptime-bar__icon { font-size: 16px; }
+  .uptime-bar__val {
+    font-size: 18px; font-weight: 800; color: var(--blue);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===== 日志区 ===== */
+  .log {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 11px; overflow: hidden; backdrop-filter: blur(6px);
+  }
+  .log__header {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-hi);
+  }
+  .log__title { font-size: 11px; font-weight: 700; color: var(--text-dim); letter-spacing: .3px; }
+  .log__count {
+    font-size: 10px; color: var(--sub); background: var(--bg-2);
+    padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border);
+  }
+  .log__list {
+    padding: 8px 14px 12px; max-height: 180px; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    font-family: 'Cascadia Code','Consolas',monospace;
+    font-size: 10.5px; line-height: 1.85;
+  }
+  .log__list::-webkit-scrollbar { width: 4px; }
+  .log__list::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+  .log__item { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log__item .ts { color: var(--sub); }
+  .log__item .ok { color: var(--green); }
+  .log__item .err { color: var(--red); }
+  .log__item .warn { color: var(--orange); }
+  .log__empty { color: var(--sub); font-style: italic; }
+
+  /* ===== 底部 ===== */
+  .footer {
+    text-align: center; font-size: 10px; color: var(--sub);
+    margin-top: 14px; letter-spacing: .3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand__logo">🖥️</div>
+    <div>
+      <div class="brand__name">净垢灵 · <span>移动监控</span></div>
+      <div class="brand__tag">REAL-TIME MONITOR</div>
+    </div>
+  </div>
+  <div class="topbar__meta">
+    <div class="topbar__time" id="clock">--:--</div>
+    <div class="topbar__refresh">
+      <span class="dot-live"></span>
+      <span>5s 刷新</span>
+    </div>
+  </div>
+  <button class="btn-refresh" id="refreshBtn" aria-label="刷新页面" title="刷新页面">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M23 4v6h-6M1 20v-6h6" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+  </button>
+</div>
+
+<div class="err-banner" id="errBanner">
+  <span>⚠</span>
+  <span>无法连接服务器</span>
+</div>
+
+<div class="hero online" id="statusCard">
+  <div class="hero__light" id="statusLight">✓</div>
+  <div class="hero__info">
+    <div class="hero__label">服务器状态</div>
+    <div class="hero__value" id="statusValue">检测中</div>
+    <div class="hero__detail" id="statusDetail">连接中...</div>
+  </div>
+</div>
+
+<div class="progress"><div class="progress__bar" id="progressBar"></div></div>
+
+<div class="uptime-bar">
+  <div>
+    <div class="uptime-bar__label">运行时长</div>
+    <div class="uptime-bar__icon">⏱️</div>
+  </div>
+  <div class="uptime-bar__val" id="uptime">--</div>
+</div>
+
+<div class="grid">
+  <div class="stat stat--sessions">
+    <div class="stat__top">
+      <span class="stat__icon">💬</span>
+      <span class="stat__label">会话</span>
+    </div>
+    <div class="stat__value" id="sessions">--</div>
+    <div class="stat__sub">活跃会话</div>
+  </div>
+  <div class="stat stat--messages">
+    <div class="stat__top">
+      <span class="stat__icon">📝</span>
+      <span class="stat__label">留言</span>
+    </div>
+    <div class="stat__value" id="messages">--</div>
+    <div class="stat__sub">待处理</div>
+  </div>
+  <div class="stat stat--connections">
+    <div class="stat__top">
+      <span class="stat__icon">📡</span>
+      <span class="stat__label">在线</span>
+    </div>
+    <div class="stat__value" id="connections">--</div>
+    <div class="stat__sub">SSE 连接</div>
+  </div>
+  <div class="stat stat--rate">
+    <div class="stat__top">
+      <span class="stat__icon">📊</span>
+      <span class="stat__label">可用率</span>
+    </div>
+    <div class="stat__value" id="rate">--</div>
+    <div class="stat__sub" id="rateSub">检测中</div>
+  </div>
+</div>
+
+<div class="log">
+  <div class="log__header">
+    <span class="log__title">📋 实时日志</span>
+    <span class="log__count" id="logCount">0 条</span>
+  </div>
+  <div class="log__list" id="logList">
+    <div class="log__empty">暂无日志</div>
+  </div>
+</div>
+
+<div class="footer">净垢灵 · 网站监控系统 v2.0 · HTTPS</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+(function () {
+  'use strict';
+  var API = '';
+  if (!location.hostname || location.protocol === 'file:') {
+    API = 'https://localhost:8200';
+  }
+  var STATUS_URL = API + '/api/status';
+  var REFRESH_MS = 5000;
+  var logs = [];
+  var prevStatus = null;
+  var onlineCount = 0, totalCount = 0;
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function updateClock() {
+    var d = new Date();
+    document.getElementById('clock').textContent =
+      pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // 手动刷新按钮
+  var refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function () {
+      location.reload(true);
+    });
+  }
+
+  // 刷新进度条
+  var progressStart = Date.now();
+  function tickProgress() {
+    var elapsed = Date.now() - progressStart;
+    var pct = Math.min(100, (elapsed / REFRESH_MS) * 100);
+    var bar = document.getElementById('progressBar');
+    if (bar) bar.style.width = pct + '%';
+    if (pct < 100) requestAnimationFrame(tickProgress);
+  }
+  function resetProgress() {
+    progressStart = Date.now();
+    var bar = document.getElementById('progressBar');
+    if (bar) bar.style.width = '0%';
+    requestAnimationFrame(tickProgress);
+  }
+
+  function addLog(type, msg) {
+    var d = new Date();
+    var ts = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    logs.unshift({ ts: ts, type: type, msg: msg });
+    if (logs.length > 30) logs.pop();
+    renderLogs();
+  }
+  function renderLogs() {
+    var html = logs.map(function (l) {
+      return '<div class="log__item"><span class="ts">[' + l.ts + ']</span> <span class="' + l.type + '">' + l.msg + '</span></div>';
+    }).join('');
+    var el = document.getElementById('logList');
+    el.innerHTML = html || '<div class="log__empty">暂无日志</div>';
+    document.getElementById('logCount').textContent = logs.length + ' 条';
+  }
+
+  function updateRate() {
+    var rate = totalCount > 0 ? Math.round((onlineCount / totalCount) * 100) : 0;
+    document.getElementById('rate').textContent = rate + '%';
+    document.getElementById('rateSub').textContent = onlineCount + '/' + totalCount + ' 成功';
+  }
+
+  function check() {
+    totalCount++;
+    updateRate();
+    var timer = setTimeout(function () {}, 5000);
+    window.JC.getStatus()
+      .then(function (s) {
+        clearTimeout(timer);
+        onlineCount++;
+        updateRate();
+        document.getElementById('errBanner').classList.remove('show');
+        var card = document.getElementById('statusCard');
+        card.className = 'hero';
+        if (s.maintenance) {
+          card.classList.add('maintenance');
+          document.getElementById('statusLight').textContent = '🔧';
+          document.getElementById('statusValue').textContent = '维护中';
+          document.getElementById('statusDetail').textContent = s.maintenanceWindow || '0:00–8:00';
+        } else {
+          card.classList.add('online');
+          document.getElementById('statusLight').textContent = '✓';
+          document.getElementById('statusValue').textContent = '运行中';
+          document.getElementById('statusDetail').textContent = '正常 · ' + (s.serviceHours || '9:00–21:00');
+        }
+
+        document.getElementById('uptime').textContent = s.uptime || '--';
+        document.getElementById('sessions').textContent = s.sessionCount || 0;
+        document.getElementById('messages').textContent = s.leaveMessageCount || 0;
+        document.getElementById('connections').textContent = s.onlineConnections || 0;
+
+        var cur = s.maintenance ? 'maintenance' : 'online';
+        if (prevStatus && prevStatus !== cur) {
+          if (cur === 'maintenance') addLog('warn', '进入维护模式');
+          else addLog('ok', '恢复正常');
+        }
+        prevStatus = cur;
+
+        if (onlineCount % 6 === 0) {
+          addLog('ok', '心跳正常 · ' + onlineCount + '/' + totalCount);
+        }
+      })
+      .catch(function (e) {
+        clearTimeout(timer);
+        document.getElementById('errBanner').classList.add('show');
+        var card = document.getElementById('statusCard');
+        card.className = 'hero offline';
+        document.getElementById('statusLight').textContent = '✕';
+        document.getElementById('statusValue').textContent = '离线';
+        document.getElementById('statusDetail').textContent = '无法连接';
+        if (prevStatus !== 'offline') {
+          addLog('err', '服务器无响应');
+        }
+        prevStatus = 'offline';
+      })
+      .then(resetProgress);
+  }
+
+  addLog('ok', '监控启动 · https ' + (location.hostname || 'localhost') + ':8200');
+  resetProgress();
+  check();
+  setInterval(check, REFRESH_MS);
+})();
+
+// PWA：注册 Service Worker（iOS 添加到主屏后以 App 形态运行）
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw-monitor.js').catch(function () {});
+  });
+}
+</script>
+
+</body>
+</html>
