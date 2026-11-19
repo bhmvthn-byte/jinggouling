@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>净垢灵 · 网站监控台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #060912;
+    --bg-2: #0d1320;
+    --surface: rgba(19,26,38,.85);
+    --surface-hi: rgba(26,35,52,.9);
+    --border: rgba(40,55,73,.6);
+    --border-hi: rgba(60,80,100,.5);
+    --text: #e6edf3;
+    --text-dim: #8b97a8;
+    --sub: #5d6b7d;
+    --green: #3fb950;
+    --green-soft: rgba(63,185,80,.12);
+    --green-glow: rgba(63,185,80,.25);
+    --red: #f85149;
+    --red-soft: rgba(248,81,73,.12);
+    --red-glow: rgba(248,81,73,.25);
+    --orange: #f0883e;
+    --orange-soft: rgba(240,136,62,.12);
+    --orange-glow: rgba(240,136,62,.25);
+    --blue: #58a6ff;
+    --blue-soft: rgba(88,166,255,.12);
+    --cyan: #39d0d8;
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, 'PingFang SC', sans-serif;
+    color: var(--text);
+    min-height: 100vh; padding: 24px 28px 32px;
+    background: var(--bg);
+    background-image:
+      radial-gradient(700px 420px at 12% -8%, rgba(63,185,80,.07), transparent 60%),
+      radial-gradient(620px 380px at 92% 108%, rgba(88,166,255,.06), transparent 55%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    background-attachment: fixed;
+  }
+
+  /* ===== 顶部栏 ===== */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px; gap: 16px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand__logo {
+    width: 42px; height: 42px; border-radius: 11px; flex: none;
+    display: grid; place-items: center; font-size: 22px;
+    background: linear-gradient(135deg, var(--green), var(--cyan));
+    box-shadow: 0 4px 16px rgba(63,185,80,.3);
+  }
+  .brand__name { font-size: 19px; font-weight: 800; letter-spacing: .5px; }
+  .brand__name span { color: var(--blue); }
+  .brand__tag {
+    font-size: 10px; color: var(--sub); letter-spacing: 1.5px;
+    text-transform: uppercase; margin-top: 1px;
+  }
+  .topbar__meta { text-align: right; }
+  .topbar__time {
+    font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums;
+    font-weight: 600; letter-spacing: .5px;
+  }
+  .topbar__refresh { font-size: 11px; color: var(--sub); margin-top: 2px; display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+  .dot-live {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 6px var(--green-glow); animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+  /* ===== 错误横幅 ===== */
+  .error-banner {
+    display: none; background: linear-gradient(90deg, var(--red-soft), transparent);
+    border: 1px solid var(--red); border-left-width: 3px; border-radius: var(--radius-sm);
+    padding: 11px 16px; margin-bottom: 14px;
+    color: var(--red); font-size: 13px; font-weight: 600;
+    align-items: center; gap: 8px;
+  }
+  .error-banner.show { display: flex; animation: shake .4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }
+
+  /* ===== 主状态卡 ===== */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px 28px; margin-bottom: 14px;
+    position: relative; overflow: hidden;
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; gap: 22px;
+    transition: border-color .4s;
+  }
+  .hero::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(520px 220px at 0% 50%, var(--green-soft), transparent 70%);
+    transition: background .4s;
+  }
+  .hero.offline::after { background: radial-gradient(520px 220px at 0% 50%, var(--red-soft), transparent 70%); }
+  .hero.maintenance::after { background: radial-gradient(520px 220px at 0% 50%, var(--orange-soft), transparent 70%); }
+  .hero.online { border-color: rgba(63,185,80,.35); }
+  .hero.offline { border-color: rgba(248,81,73,.4); }
+  .hero.maintenance { border-color: rgba(240,136,62,.35); }
+
+  .hero__light {
+    width: 64px; height: 64px; border-radius: 50%; flex: none;
+    display: grid; place-items: center; font-size: 30px;
+    background: var(--green-soft); border: 2px solid var(--green);
+    position: relative; z-index: 1;
+    animation: pulse-ring 2.4s infinite;
+    transition: all .4s;
+  }
+  .hero.offline .hero__light {
+    background: var(--red-soft); border-color: var(--red);
+    animation: pulse-ring-fast 1.2s infinite;
+  }
+  .hero.maintenance .hero__light {
+    background: var(--orange-soft); border-color: var(--orange);
+    animation: none;
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 var(--green-glow); }
+    70% { box-shadow: 0 0 0 14px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  @keyframes pulse-ring-fast {
+    0% { box-shadow: 0 0 0 0 var(--red-glow); }
+    70% { box-shadow: 0 0 0 12px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .hero__info { flex: 1; position: relative; z-index: 1; }
+  .hero__label {
+    font-size: 10px; color: var(--sub); letter-spacing: 2px;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .hero__value {
+    font-size: 30px; font-weight: 800; margin-top: 3px; letter-spacing: .5px;
+    transition: color .3s;
+  }
+  .hero.online .hero__value { color: var(--green); }
+  .hero.offline .hero__value { color: var(--red); }
+  .hero.maintenance .hero__value { color: var(--orange); }
+  .hero__detail { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
+
+  .hero__uptime {
+    position: relative; z-index: 1; text-align: right; flex: none;
+    padding-left: 22px; border-left: 1px solid var(--border);
+  }
+  .hero__uptime-label { font-size: 10px; color: var(--sub); letter-spacing: 1.5px; text-transform: uppercase; }
+  .hero__uptime-val {
+    font-size: 22px; font-weight: 700; margin-top: 2px;
+    font-variant-numeric: tabular-nums; color: var(--blue);
+  }
+
+  /* ===== 刷新进度条 ===== */
+  .progress {
+    height: 2px; background: var(--bg-2); border-radius: 1px;
+    margin-bottom: 14px; overflow: hidden; position: relative;
+  }
+  .progress__bar {
+    height: 100%; width: 0; border-radius: 1px;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    box-shadow: 0 0 8px var(--green-glow);
+  }
+
+  /* ===== 数据网格 ===== */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 14px;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px 14px;
+    position: relative; overflow: hidden; backdrop-filter: blur(6px);
+    transition: border-color .3s, transform .2s;
+  }
+  .stat:hover { border-color: var(--border-hi); transform: translateY(-2px); }
+  .stat::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent, var(--blue)); opacity: .7;
+  }
+  .stat--uptime { --accent: var(--blue); }
+  .stat--sessions { --accent: var(--cyan); }
+  .stat--messages { --accent: var(--orange); }
+  .stat--connections { --accent: var(--green); }
+  .stat--rate { --accent: #a371f7; }
+  .stat__top { display: flex; align-items: center; justify-content: space-between; }
+  .stat__icon { font-size: 20px; opacity: .9; }
+  .stat__label { font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+  .stat__value {
+    font-size: 26px; font-weight: 800; margin-top: 6px;
+    font-variant-numeric: tabular-nums; letter-spacing: .3px;
+  }
+  .stat__sub { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+  /* ===== 日志区 ===== */
+  .log {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); overflow: hidden; backdrop-filter: blur(6px);
+  }
+  .log__header {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-hi);
+  }
+  .log__title { font-size: 12px; font-weight: 700; color: var(--text-dim); letter-spacing: .5px; }
+  .log__count {
+    font-size: 11px; color: var(--sub); background: var(--bg-2);
+    padding: 2px 9px; border-radius: 20px; border: 1px solid var(--border);
+  }
+  .log__list {
+    padding: 10px 16px 14px; max-height: 200px; overflow-y: auto;
+    font-family: 'Cascadia Code','Consolas','Monaco',monospace;
+    font-size: 11.5px; line-height: 1.85;
+  }
+  .log__list::-webkit-scrollbar { width: 6px; }
+  .log__list::-webkit-scrollbar-track { background: transparent; }
+  .log__list::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+  .log__item { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log__item .ts { color: var(--sub); }
+  .log__item .ok { color: var(--green); }
+  .log__item .err { color: var(--red); }
+  .log__item .warn { color: var(--orange); }
+  .log__empty { color: var(--sub); font-style: italic; }
+
+  /* ===== 底部 ===== */
+  .footer {
+    text-align: center; font-size: 11px; color: var(--sub);
+    margin-top: 18px; padding: 8px;
+    letter-spacing: .5px;
+  }
+  .footer a { color: var(--blue); text-decoration: none; }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 600px) {
+    body { padding: 16px 14px 24px; }
+    .brand__name { font-size: 16px; }
+    .hero { padding: 20px 18px; gap: 14px; flex-wrap: wrap; }
+    .hero__light { width: 52px; height: 52px; font-size: 26px; }
+    .hero__value { font-size: 24px; }
+    .hero__uptime { padding-left: 0; border-left: none; width: 100%; text-align: left; padding-top: 12px; border-top: 1px solid var(--border); }
+    .grid { grid-template-columns: 1fr 1fr; }
+    .stat__value { font-size: 22px; }
+    .log__list { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand__logo">🖥️</div>
+    <div>
+      <div class="brand__name">净垢灵 · <span>网站监控台</span></div>
+      <div class="brand__tag">REAL-TIME SERVER MONITOR</div>
+    </div>
+  </div>
+  <div class="topbar__meta">
+    <div class="topbar__time" id="clock">--:--:--</div>
+    <div class="topbar__refresh">
+      <span class="dot-live"></span>
+      <span>每 5 秒自动刷新</span>
+    </div>
+  </div>
+</div>
+
+<div class="error-banner" id="errorBanner">
+  <span>⚠</span>
+  <span>无法连接服务器！请检查 server.py 是否运行。</span>
+</div>
+
+<div class="hero online" id="statusMain">
+  <div class="hero__light" id="statusLight">✓</div>
+  <div class="hero__info">
+    <div class="hero__label">服务器状态</div>
+    <div class="hero__value" id="statusValue">检测中</div>
+    <div class="hero__detail" id="statusDetail">正在获取数据...</div>
+  </div>
+  <div class="hero__uptime">
+    <div class="hero__uptime-label">运行时长</div>
+    <div class="hero__uptime-val" id="uptime">--</div>
+  </div>
+</div>
+
+<div class="progress"><div class="progress__bar" id="progressBar"></div></div>
+
+<div class="grid">
+  <div class="stat stat--sessions">
+    <div class="stat__top">
+      <span class="stat__icon">💬</span>
+      <span class="stat__label">会话数</span>
+    </div>
+    <div class="stat__value" id="sessions">--</div>
+    <div class="stat__sub">活跃会话</div>
+  </div>
+  <div class="stat stat--messages">
+    <div class="stat__top">
+      <span class="stat__icon">📝</span>
+      <span class="stat__label">留言数</span>
+    </div>
+    <div class="stat__value" id="messages">--</div>
+    <div class="stat__sub">待处理留言</div>
+  </div>
+  <div class="stat stat--connections">
+    <div class="stat__top">
+      <span class="stat__icon">📡</span>
+      <span class="stat__label">在线连接</span>
+    </div>
+    <div class="stat__value" id="connections">--</div>
+    <div class="stat__sub">SSE 实时连接</div>
+  </div>
+  <div class="stat stat--rate">
+    <div class="stat__top">
+      <span class="stat__icon">📊</span>
+      <span class="stat__label">可用率</span>
+    </div>
+    <div class="stat__value" id="rate">--</div>
+    <div class="stat__sub" id="rateSub">检测中</div>
+  </div>
+</div>
+
+<div class="log">
+  <div class="log__header">
+    <span class="log__title">📋 实时日志</span>
+    <span class="log__count" id="logCount">0 条</span>
+  </div>
+  <div class="log__list" id="logList">
+    <div class="log__empty">暂无日志</div>
+  </div>
+</div>
+
+<div class="footer">
+  净垢灵饮水机除垢剂 · 网站监控系统 v2.0 · HTTPS 加密连接
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+(function () {
+  'use strict';
+  var API;
+  if (location.protocol === 'file:' || !location.hostname) {
+    API = 'https://localhost:8200';
+  } else {
+    API = '';
+  }
+  var isFile = location.protocol === 'file:' || !location.hostname;
+  var STATUS_URL = API + '/api/status';
+  var FALLBACK_URL = STATUS_URL.replace('https://', 'http://');
+  var REFRESH_MS = 5000;
+  var logs = [];
+  var prevStatus = null;
+  var onlineCount = 0, totalCount = 0;
+
+  // 时钟
+  function updateClock() {
+    var d = new Date();
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    document.getElementById('clock').textContent =
+      d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' +
+      pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // 刷新进度条
+  var progressStart = Date.now();
+  function tickProgress() {
+    var elapsed = Date.now() - progressStart;
+    var pct = Math.min(100, (elapsed / REFRESH_MS) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    if (pct < 100) requestAnimationFrame(tickProgress);
+  }
+  function resetProgress() {
+    progressStart = Date.now();
+    document.getElementById('progressBar').style.width = '0%';
+    requestAnimationFrame(tickProgress);
+  }
+
+  // 日志
+  function addLog(type, msg) {
+    var d = new Date();
+    var ts = d.toLocaleTimeString('zh-CN', { hour12: false });
+    logs.unshift({ ts: ts, type: type, msg: msg });
+    if (logs.length > 50) logs.pop();
+    renderLogs();
+  }
+  function renderLogs() {
+    var html = logs.map(function (l) {
+      return '<div class="log__item"><span class="ts">[' + l.ts + ']</span> <span class="' + l.type + '">' + l.msg + '</span></div>';
+    }).join('');
+    var el = document.getElementById('logList');
+    el.innerHTML = html || '<div class="log__empty">暂无日志</div>';
+    document.getElementById('logCount').textContent = logs.length + ' 条';
+  }
+
+  // 可用率
+  function updateRate() {
+    var rate = totalCount > 0 ? Math.round((onlineCount / totalCount) * 100) : 0;
+    document.getElementById('rate').textContent = rate + '%';
+    document.getElementById('rateSub').textContent = onlineCount + '/' + totalCount + ' 次成功';
+  }
+
+  function fetchJSON(url, options) {
+    if (isFile) options = options || { mode: 'no-cors', cache: 'no-store' };
+    return fetch(url, options).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function check() {
+    totalCount++;
+    updateRate();
+    var timer = setTimeout(function () {}, 5000);
+    var chain = window.JC.getStatus();
+
+    chain
+      .then(function (s) {
+        clearTimeout(timer);
+        onlineCount++;
+        updateRate();
+        document.getElementById('errorBanner').classList.remove('show');
+        var main = document.getElementById('statusMain');
+        var light = document.getElementById('statusLight');
+        var val = document.getElementById('statusValue');
+        var det = document.getElementById('statusDetail');
+
+        main.className = 'hero';
+        if (s.maintenance) {
+          main.classList.add('maintenance');
+          light.textContent = '🔧';
+          val.textContent = '维护中';
+          det.textContent = '维护窗口 ' + (s.maintenanceWindow || '0:00–8:00');
+        } else {
+          main.classList.add('online');
+          light.textContent = '✓';
+          val.textContent = '运行中';
+          det.textContent = '服务器正常响应 · 服务时间 ' + (s.serviceHours || '9:00–21:00');
+        }
+
+        document.getElementById('uptime').textContent = s.uptime || '0:00';
+        document.getElementById('sessions').textContent = s.sessionCount || 0;
+        document.getElementById('messages').textContent = s.leaveMessageCount || 0;
+        document.getElementById('connections').textContent = s.onlineConnections || 0;
+
+        var curStatus = s.maintenance ? 'maintenance' : 'online';
+        if (prevStatus && prevStatus !== curStatus) {
+          if (curStatus === 'maintenance') addLog('warn', '服务器进入维护模式');
+          else if (curStatus === 'online' && prevStatus === 'maintenance') addLog('ok', '维护结束，服务器恢复正常');
+        }
+        prevStatus = curStatus;
+
+        if (onlineCount % 12 === 0) {
+          addLog('ok', '心跳正常 · 在线 ' + onlineCount + '/' + totalCount + ' · uptime ' + s.uptime);
+        }
+      })
+      .catch(function (e) {
+        clearTimeout(timer);
+        document.getElementById('errorBanner').classList.add('show');
+        var main = document.getElementById('statusMain');
+        main.className = 'hero offline';
+        document.getElementById('statusLight').textContent = '✕';
+        document.getElementById('statusValue').textContent = '离线';
+        document.getElementById('statusDetail').textContent = '无法连接服务器';
+        if (prevStatus !== 'offline') {
+          addLog('err', '服务器无响应！' + (e.message || '连接失败'));
+        }
+        prevStatus = 'offline';
+      })
+      .then(resetProgress);
+  }
+
+  addLog('ok', '监控台启动 · 每 ' + (REFRESH_MS / 1000) + ' 秒检测');
+  resetProgress();
+  check();
+  setInterval(check, REFRESH_MS);
+})();
+</script>
+
+</body>
+</html>
