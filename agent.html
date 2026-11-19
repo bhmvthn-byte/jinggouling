@@ -154,7 +154,7 @@
     }
     .monitor__item:last-child { border-right: none; }
     .monitor__label { font-size: 11px; color: var(--c-text-sub); white-space: nowrap; }
-    .monitor__value { font-size: 14px; font-weight: 600; color: var(--c-text); white-space: nowrap; }
+    .monitor__value { font-size: 14px; font-weight: 600; color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .monitor__value--ok { color: var(--c-primary); }
     .monitor__value--warn { color: #FFB347; }
     .monitor__value--danger { color: var(--c-danger); }
@@ -286,7 +286,7 @@
       .work__logout { font-size: 12px; padding: 6px 12px; }
 
       /* 监控面板：横向滑动 */
-      .monitor__item { min-width: 92px; padding: 8px 10px; }
+      .monitor__item { min-width: 120px; padding: 8px 10px; }
       .monitor__label { font-size: 10px; }
       .monitor__value { font-size: 12px; }
 
@@ -434,7 +434,7 @@
       var clockTimer = null;
       function tickClock() {
         var el = document.getElementById('mTime');
-        if (el && window.JC && window.JC.nowBeijing) el.textContent = window.JC.nowBeijing();
+        if (el && window.JC && window.JC.nowBeijingShort) el.textContent = window.JC.nowBeijingShort();
       }
       function startMonitor() {
         if (monitorTimer) clearInterval(monitorTimer);
@@ -462,7 +462,6 @@
           lv.textContent = leaves;
           lv.className = 'monitor__value' + (leaves > 0 ? ' monitor__value--warn' : '');
           document.getElementById('mWindow').textContent = s.maintenanceWindow || '0:00–8:00';
-          document.getElementById('mTime').textContent = s.serverTime || '—';
         }).catch(function () {
           var st = document.getElementById('mStatus');
           st.innerHTML = '<span class="monitor__dot monitor__dot--danger"></span>连接失败';
