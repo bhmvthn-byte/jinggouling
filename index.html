@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>净垢灵 JINGGOULING · 饮水机/咖啡机/蒸饭机除垢剂｜除垢 · 除菌 · 养护 分线更专业</title>
+  <meta name="description" content="净垢灵除垢剂，分三款设备：饮水机、咖啡机、蒸饭机。每款均含除垢、除菌、养护三大功能，食品级配方，免拆机、几分钟完成清洁。" />
+  <link rel="stylesheet" href="styles.css?v=20260911" />
+</head>
+<body data-page="home">
+  <!-- 维护模式弹窗（游戏风格） -->
+  <div class="mtg-overlay" id="maintenanceBanner" hidden>
+    <div class="mtg-card">
+      <div class="mtg-card__glow"></div>
+      <div class="mtg-header">
+        <span class="mtg-header__deco">◆</span>
+        <span class="mtg-icon">🔧</span>
+        <h2 class="mtg-title">系统维护公告</h2>
+        <span class="mtg-header__deco">◆</span>
+      </div>
+      <div class="mtg-body">
+        <div class="mtg-window" id="mtgWindow">维护时间 0:00–8:00</div>
+        <p class="mtg-msg" id="maintenanceMsg">系统正在进行每日例行维护，期间 AI 客服暂停服务。您仍可留言，客服将于 8:00 恢复 AI 客服、9:00 恢复人工客服后优先回复您。</p>
+      </div>
+      <button class="mtg-btn" id="mtgCloseBtn" type="button">我知道了</button>
+    </div>
+  </div>
+
+  <!-- ============ 企业内部使用公告弹窗 ============ -->
+  <div class="notice-modal" id="internalNoticeModal" hidden>
+    <div class="notice-modal__card">
+      <div class="notice-modal__icon" aria-hidden="true">🔒</div>
+      <h2 class="notice-modal__title">企业内部使用</h2>
+      <p class="notice-modal__msg">此网站只限于企业内部使用，请勿对外传播。</p>
+      <button class="notice-modal__btn" id="internalNoticeClose" type="button">我知道了</button>
+    </div>
+  </div>
+
+  <!-- ============ 顶部导航（规范化导航，全站唯一） ============ -->
+  <header class="topbar" id="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="#hero" data-nav="home">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.69 17.66 8.35a8 8 0 1 1-11.32 0L12 2.69Z" />
+          </svg>
+        </span>
+        <span class="brand__text">
+          <strong>净垢灵</strong>
+          <em>JINGGOULING</em>
+        </span>
+      </a>
+
+      <nav class="nav" id="nav" aria-label="主导航">
+        <a href="#scenarios" data-nav="scenarios">产品线</a>
+        <a href="#features" data-nav="features">产品亮点</a>
+        <a href="#how" data-nav="how">使用方法</a>
+        <a href="#safety" data-nav="safety">成分安全</a>
+        <a href="#faq" data-nav="faq">常见问题</a>
+      </nav>
+
+      <div class="topbar__actions">
+        <a class="btn btn--ghost" href="#how">怎么用</a>
+        <a class="btn btn--primary" href="#buy">在线客服</a>
+        <button class="btn-refresh" id="refreshBtn" aria-label="刷新页面" title="刷新页面">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6M1 20v-6h6" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ Hero ============ -->
+  <section class="hero" id="hero">
+    <div class="container hero__grid">
+      <div class="hero__copy reveal">
+        <p class="hero__eyebrow">
+          <span class="pill">饮水机 · 咖啡机 · 蒸饭机 清洁专家</span>
+        </p>
+        <h1 class="hero__title">
+          三种设备，<span class="accent">分线更专业</span><br />
+          除垢 · 除菌 · 养护一步到位
+        </h1>
+        <p class="hero__sub">
+          净垢灵推出饮水机、咖啡机、蒸饭机三款除垢剂，食品级配方，针对水路与内胆的水垢、细菌、
+          陈水异味分线养护，免拆机、几分钟完成，直饮更安心。
+        </p>
+        <div class="hero__cta">
+          <a class="btn btn--primary btn--lg" href="#buy">在线客服</a>
+          <a class="btn btn--ghost btn--lg" href="#how">查看使用方法</a>
+        </div>
+        <ul class="hero__trust">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            食品级 安心直饮
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            除菌抑味 母婴可用
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            专业分线 精准清洁
+          </li>
+        </ul>
+      </div>
+
+      <div class="hero__visual reveal" aria-hidden="true">
+        <div class="hero__bottle">
+          <div class="bottle__cap"></div>
+          <div class="bottle__neck"></div>
+          <div class="bottle__body">
+            <span class="bottle__brand">净垢灵</span>
+            <span class="bottle__name">饮水机 / 咖啡机<br />蒸饭机 专用清洁剂</span>
+            <span class="bottle__tag">除垢 · 除菌 · 养护</span>
+          </div>
+          <div class="bubble bubble--1"></div>
+          <div class="bubble bubble--2"></div>
+          <div class="bubble bubble--3"></div>
+          <div class="bubble bubble--4"></div>
+          <div class="bubble bubble--5"></div>
+        </div>
+        <div class="hero__badge hero__badge--l">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5 11 20l5.5-.5-1.5-5.5L9.5 14.5Z"/><path d="M12 2v4M4 6h16"/></svg>
+          <div><strong>60 秒</strong><span>快速见效</span></div>
+        </div>
+        <div class="hero__badge hero__badge--r">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.18 1.18 0 0 1 1.52 0C14.51 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+          <div><strong>食品级安全</strong><span>通过广东省微生物分析检测中心</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="hero__wave" aria-hidden="true"></div>
+  </section>
+
+  <!-- ============ 产品线 ============ -->
+  <section class="section" id="scenarios">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="kicker">专业产品线</p>
+        <h2>除垢 · 除菌 · 养护，三大功能分线更专业</h2>
+        <p class="section__desc">净垢灵推出饮水机、咖啡机、蒸饭机三款除垢剂，每款均含除垢、除菌、养护三大功能，针对不同设备的水垢、细菌与异味精准清洁。</p>
+      </div>
+      <div class="grid grid--3" id="scenarioGrid"><!-- 由 app.js 从 mock 渲染 --></div>
+    </div>
+  </section>
+
+  <!-- ============ 产品亮点 ============ -->
+  <section class="section section--tint" id="features">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="kicker">产品亮点</p>
+        <h2>把「难清洁」变成「不费力」</h2>
+        <p class="section__desc">高效成分配方 × 食品级安全，净垢灵让设备清洁真正省心省力。</p>
+      </div>
+      <div class="grid grid--4" id="featureGrid"><!-- 由 app.js 从 mock 渲染 --></div>
+    </div>
+  </section>
+
+  <!-- ============ 使用方法 ============ -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section__head reveal">
+        <p class="kicker">使用方法</p>
+        <h2>五步彻底清洁，焕新饮水</h2>
+      </div>
+      <div class="steps" id="stepList"><!-- 由 app.js 从 mock 渲染 --></div>
+    </div>
+  </section>
+
+  <!-- ============ 成分与安全 ============ -->
+  <section class="section section--tint" id="safety">
+    <div class="container safety__grid">
+      <div class="safety__copy reveal">
+        <p class="kicker">成分与安全</p>
+        <h2>食品级配方，守护饮水健康</h2>
+        <p class="section__desc">
+          净垢灵采用食品级柠檬酸、可降解表面活性剂与植物精油，温和去垢除菌，
+          接触饮水部件也安全，母婴家庭也能放心直饮。
+        </p>
+        <ul class="cert-list" id="certList"><!-- 由 app.js 从 mock 渲染 --></ul>
+        <a class="btn btn--primary" href="#buy">在线客服</a>
+      </div>
+      <div class="safety__panel reveal" id="ingredientList" aria-hidden="true">
+        <!-- 由 app.js 从 mock 渲染成分 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 常见问题 ============ -->
+  <section class="section" id="faq">
+    <div class="container container--narrow">
+      <div class="section__head reveal">
+        <p class="kicker">常见问题</p>
+        <h2>你可能还想知道</h2>
+      </div>
+      <div class="faq" id="faqList"><!-- 由 app.js 从 mock 渲染 --></div>
+    </div>
+  </section>
+
+  <!-- ============ 购买 CTA ============ -->
+  <section class="cta" id="buy">
+    <div class="container cta__inner reveal">
+      <div class="cta__copy">
+        <p class="kicker kicker--light">现在行动</p>
+        <h2>给设备一次彻底焕新</h2>
+        <p>饮水机、咖啡机、蒸饭机三款可选，下单即享 7 天无理由退换，全国包邮，快至隔日送达。人工客服服务时间：9:00–21:00。</p>
+      </div>
+      <div class="cta__actions">
+        <div class="cta__price">
+          <span class="cta__price-now">¥49.9</span>
+          <span class="cta__price-old">¥79.9</span>
+          <span class="cta__price-tag">限时 6.2 折</span>
+        </div>
+
+        <!-- 产品型号选择 -->
+        <div class="pline" role="radiogroup" aria-label="选择产品型号">
+          <span class="pline__label">选择产品型号</span>
+          <div class="pline__options" id="plineOptions"><!-- 由 app.js 从 mock 渲染 --></div>
+        </div>
+
+        <div class="cta__btns">
+          <button class="btn btn--light btn--lg" id="openSupportBtn">在线客服</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 在线客服面板（AI 智能 + 转人工） ============ -->
+    <div class="container support" id="supportPanel" aria-hidden="true">
+      <div class="support__card">
+        <header class="support__head">
+          <div class="support__agent">
+            <span class="support__avatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69 17.66 8.35a8 8 0 1 1-11.32 0L12 2.69Z" /></svg>
+            </span>
+            <div>
+              <strong id="supportTitle">净垢灵 AI 客服</strong>
+              <span class="support__status" id="supportStatus"><i></i> 智能客服 · 秒回</span>
+            </div>
+          </div>
+          <div class="support__head-actions">
+            <button class="btn support__switch" id="switchToAgent" type="button">转人工客服</button>
+            <button class="btn support__switch support__switch--end" id="endChatBtn" type="button" hidden>结束对话</button>
+            <button class="support__close" id="supportClose" aria-label="关闭客服">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="support__body" id="supportBody" aria-live="polite"></div>
+
+        <!-- 非服务时间留言表单 -->
+        <div class="support__leave" id="supportLeave" hidden>
+          <p class="support__leave-tip" id="leaveTip"></p>
+          <form class="support__leave-form" id="leaveForm">
+            <input type="text" id="leaveName" placeholder="您的姓名" autocomplete="off" maxlength="20" />
+            <input type="tel" id="leavePhone" placeholder="手机号码" autocomplete="off" maxlength="11" />
+            <textarea id="leaveMessage" placeholder="请描述您的问题（选填）" rows="2" maxlength="200"></textarea>
+            <button type="submit" class="btn btn--primary btn--lg">提交留言</button>
+          </form>
+        </div>
+
+        <div class="support__quick" id="supportQuick"><!-- 快捷提问由 app.js 渲染 --></div>
+
+        <form class="support__input" id="supportForm">
+          <input type="text" id="supportInput" placeholder="输入你的问题，如：饮水机怎么洗？" autocomplete="off" maxlength="200" />
+          <button type="submit" id="supportSend" aria-label="发送">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div class="footer__brand">
+        <a class="brand brand--light" href="#hero">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69 17.66 8.35a8 8 0 1 1-11.32 0L12 2.69Z" /></svg>
+          </span>
+          <span class="brand__text"><strong>净垢灵</strong><em>JINGGOULING</em></span>
+        </a>
+        <p>饮水机、咖啡机、蒸饭机，让每一台设备都洁净安心。净垢灵一直在。</p>
+      </div>
+      <div class="footer__col">
+        <h4>产品</h4>
+        <a href="#scenarios">产品线</a>
+        <a href="#features">产品亮点</a>
+        <a href="#how">使用方法</a>
+      </div>
+      <div class="footer__col">
+        <h4>支持</h4>
+        <a href="#faq">常见问题</a>
+        <a href="#safety">成分安全</a>
+      </div>
+      <div class="footer__col">
+        <h4>联系我们</h4>
+        <p>客服热线：400-800-1234</p>
+        <p>服务时间：9:00–21:00</p>
+        <button class="btn btn--ghost btn--light" id="openChatFooter">在线客服</button>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 净垢灵品牌 · 保留所有权利</span>
+    </div>
+  </footer>
+
+  <!-- 提示 toast -->
+  <div class="toast" id="toast" aria-hidden="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="mock.js?v=20260911"></script>
+  <script src="api.js?v=20260911"></script>
+  <script src="app.js?v=20260911"></script>
+</body>
+</html>
