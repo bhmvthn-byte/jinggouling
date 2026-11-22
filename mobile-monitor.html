@@ -440,7 +440,7 @@
           card.classList.add('online');
           document.getElementById('statusLight').textContent = '✓';
           document.getElementById('statusValue').textContent = '运行中';
-          document.getElementById('statusDetail').textContent = '正常 · ' + (s.serviceHours || '9:00–21:00');
+          document.getElementById('statusDetail').textContent = '正常 · ' + (s.serviceHours || '7:00–24:00');
         }
 
         document.getElementById('uptime').textContent = s.uptime || '--';
