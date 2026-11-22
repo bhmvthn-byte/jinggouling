@@ -1,0 +1,50 @@
+name: 网站可用性监控
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检查网站可用性并报警
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json, urllib.request, datetime, time
+
+          urls = [
+              "https://jinggouling.site/",
+              "https://bhmvthn-byte.github.io/jinggouling/",
+          ]
+          webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/65ef483c-2822-402b-8d89-ba3a8f1990a9"
+
+          online = False
+          for u in urls:
+              try:
+                  req = urllib.request.Request(u, method="GET", headers={"User-Agent": "site-monitor"})
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      code = r.status
+              except Exception:
+                  code = 0
+              print("check %s -> %s" % (u, code))
+              if code == 200:
+                  online = True
+                  break
+
+          if not online:
+              tz = datetime.timezone(datetime.timedelta(hours=8))
+              now = datetime.datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
+              text = "🚨【网站监控】掉线警报\n时间：%s（北京时间）\n网站 jinggouling.site 无法访问，请立即检查！" % now
+              payload = json.dumps({"msg_type": "text", "content": {"text": text}}).encode("utf-8")
+              req = urllib.request.Request(webhook, data=payload, headers={"Content-Type": "application/json"})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      print("alert sent:", r.read().decode())
+              except Exception as e:
+                  print("alert failed:", e)
+          else:
+              print("SITE ONLINE")
+          PY
