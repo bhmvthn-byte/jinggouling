@@ -193,7 +193,7 @@
   /* ============ 在线客服（AI 自动 + 转人工实时） ============ */
   var support = { mode: 'ai', greeted: false, maintenance: false };
 
-  // 判断当前是否在客服服务时间 9:00-21:00
+  // 判断当前是否在客服服务时间 7:00-24:00
   function isWithinServiceHours() {
     var h = new Date().getHours();
     var sh = MOCK.chat.serviceHours;
@@ -229,7 +229,7 @@
         support.maintenance = true;
         var wl = windowLabel(s.maintenanceWindow || '00:00–08:00');
         if (win) win.textContent = '维护时间 ' + wl;
-        if (msg) msg.textContent = '系统正在进行每日例行维护（' + wl + '），期间 AI 客服暂停服务。您仍可留言，客服将于上午8点恢复 AI 客服、上午9点恢复人工客服后优先回复您。';
+        if (msg) msg.textContent = '系统正在进行每日例行维护（' + wl + '），期间 AI 客服暂停服务。您仍可留言，客服将于上午7点恢复人工客服、上午8点恢复 AI 客服后优先回复您。';
         if (banner && !mtgDismissed) banner.hidden = false;
       } else {
         support.maintenance = false;
@@ -374,7 +374,7 @@
         var leaveTip = document.getElementById('leaveTip');
         leaveTip.textContent = '系统正在维护中（0:00–8:00），请留下您的姓名、手机号和问题，客服上班后将优先回复您。';
         leaveBox.hidden = false;
-        appendMsg('sys', '系统正在维护中（0:00–8:00）。请留下您的姓名、手机号和问题，客服上班后（9:00）将优先与您联系。');
+        appendMsg('sys', '系统正在维护中（0:00–8:00）。请留下您的姓名、手机号和问题，客服上班后（7:00）将优先与您联系。');
         return;
       }
       // 非服务时间：显示留言表单
@@ -464,7 +464,7 @@
       // AI 模式：维护期间直接提示留言
       if (support.maintenance) {
         appendMsg('user', text);
-        appendMsg('bot', '系统正在维护中（0:00–8:00），AI 客服暂停服务。请点击「转人工客服」留下您的姓名、手机号和问题，客服上班后（9:00）将优先与您联系。');
+        appendMsg('bot', '系统正在维护中（0:00–8:00），AI 客服暂停服务。请点击「转人工客服」留下您的姓名、手机号和问题，客服上班后（7:00）将优先与您联系。');
         send.disabled = false;
         input.focus();
         return;
@@ -524,7 +524,7 @@
         productLine: currentLineName(),
         type: 'leave-message',
         messages: [
-          { role: 'system', content: '顾客在非服务时间留言（9:00–21:00 外），请在工作时间内回复。', ts: Date.now() },
+          { role: 'system', content: '顾客在非服务时间留言（7:00–24:00 外），请在工作时间内回复。', ts: Date.now() },
           { role: 'customer', content: '姓名：' + name + '　手机：' + phone + (msg ? '　留言：' + msg : ''), ts: Date.now() + 1 }
         ]
       };
@@ -532,7 +532,7 @@
       var fresh = {};
       fresh[humanSessionId] = s;
       writeSessions(fresh);
-      appendMsg('sys', '留言已提交，客服将在工作时间内（9:00–21:00）优先与您联系。');
+      appendMsg('sys', '留言已提交，客服将在工作时间内（7:00–24:00）优先与您联系。');
       document.getElementById('supportLeave').hidden = true;
       endChatBtn.hidden = true;
       // 清空表单
