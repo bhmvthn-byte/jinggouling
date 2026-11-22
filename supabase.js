@@ -99,7 +99,7 @@
         maintenance: maint,
         maintenanceType: maintenanceType(now),
         maintenanceWindow: '00:00–08:00',
-        serviceHours: '9:00–21:00',
+        serviceHours: '7:00–24:00',
         uptime: '云端在线',
         sessionCount: values.length,
         leaveMessageCount: leaveCount,
