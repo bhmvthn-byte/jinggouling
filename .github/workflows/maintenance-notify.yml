@@ -1,0 +1,49 @@
+name: 维护时间通知
+
+on:
+  schedule:
+    - cron: '0 16 * * *'   # 北京时间 0:00 每日例行维护开始
+    - cron: '0 0 * * *'    # 北京时间 8:00 每日例行维护结束
+    - cron: '0 3 1 * *'    # 北京时间 11:00 每月1号临时维护开始
+    - cron: '0 4 1 * *'    # 北京时间 12:00 每月1号临时维护结束
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 发送维护开始/结束通知
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json, urllib.request, datetime
+
+          tz = datetime.timezone(datetime.timedelta(hours=8))
+          now = datetime.datetime.now(tz)
+          h = now.hour
+          d = now.day
+          t = now.strftime("%Y-%m-%d %H:%M:%S")
+
+          if h == 0:
+              text = "🛠【网站监控】例行维护开始\n时间：%s（北京时间）\n每日 0:00–8:00 例行维护，AI 客服暂停服务。" % t
+          elif h == 8:
+              text = "✅【网站监控】例行维护结束\n时间：%s（北京时间）\n网站恢复正常服务。" % t
+          elif d == 1 and h == 11:
+              text = "🛠【网站监控】临时维护开始\n时间：%s（北京时间）\n本月临时维护 11:00–12:00。" % t
+          elif d == 1 and h == 12:
+              text = "✅【网站监控】临时维护结束\n时间：%s（北京时间）\n网站恢复正常服务。" % t
+          else:
+              text = None
+
+          if text:
+              webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/65ef483c-2822-402b-8d89-ba3a8f1990a9"
+              payload = json.dumps({"msg_type": "text", "content": {"text": text}}).encode("utf-8")
+              req = urllib.request.Request(webhook, data=payload, headers={"Content-Type": "application/json"})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      print("notify sent:", r.read().decode())
+              except Exception as e:
+                  print("notify failed:", e)
+          else:
+              print("no maintenance event at this time")
+          PY
